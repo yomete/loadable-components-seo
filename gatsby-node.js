@@ -1,5 +1,6 @@
 const Promise = require('bluebird')
 const path = require('path')
+const LoadablePlugin = require('@loadable/webpack-plugin')
 
 exports.createPages = ({ graphql, actions }) => {
   const { createPage } = actions
@@ -19,7 +20,7 @@ exports.createPages = ({ graphql, actions }) => {
               }
             }
           }
-          `
+        `
       ).then(result => {
         if (result.errors) {
           console.log(result.errors)
@@ -32,11 +33,23 @@ exports.createPages = ({ graphql, actions }) => {
             path: `/blog/${post.node.slug}/`,
             component: blogPost,
             context: {
-              slug: post.node.slug
+              slug: post.node.slug,
             },
           })
         })
       })
     )
+  })
+}
+
+exports.onCreateWebpackConfig = ({ stage, actions }) => {
+  actions.setWebpackConfig({
+    plugins: [new LoadablePlugin()],
+  })
+}
+
+exports.onCreateBabelConfig = ({ actions }) => {
+  actions.setBabelPlugin({
+    name: `@loadable/babel-plugin`,
   })
 }

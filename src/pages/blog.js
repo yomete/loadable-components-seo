@@ -10,6 +10,7 @@ class BlogIndex extends React.Component {
   render() {
     const siteTitle = get(this, 'props.data.site.siteMetadata.title')
     const posts = get(this, 'props.data.allContentfulBlogPost.edges')
+    console.log('BlogIndex -> render -> posts', posts)
 
     return (
       <Layout location={this.props.location}>
@@ -43,7 +44,10 @@ export const pageQuery = graphql`
         title
       }
     }
-    allContentfulBlogPost(sort: { fields: [publishDate], order: DESC }) {
+    allContentfulBlogPost(
+      filter: { node_locale: { eq: "en-US" } }
+      sort: { fields: [publishDate], order: DESC }
+    ) {
       edges {
         node {
           title

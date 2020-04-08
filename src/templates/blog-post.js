@@ -5,12 +5,42 @@ import get from 'lodash/get'
 import Img from 'gatsby-image'
 import Layout from '../components/layout'
 
+import { BLOCKS } from '@contentful/rich-text-types'
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
+import * as renderers from './renderers'
+
 import heroStyles from '../components/hero.module.css'
 
 class BlogPostTemplate extends React.Component {
   render() {
     const post = get(this.props, 'data.contentfulBlogPost')
     const siteTitle = get(this.props, 'data.site.siteMetadata.title')
+
+    const options = {
+      renderNode: {
+        [BLOCKS.EMBEDDED_ENTRY]: renderers.embeddedEntryRenderer,
+
+        [BLOCKS.HEADING_1]: (node, children) => (
+          <h1 className="heading1">{children}</h1>
+        ),
+        [BLOCKS.HEADING_2]: (node, children) => (
+          <h2 className="heading2">{children}</h2>
+        ),
+        [BLOCKS.HEADING_3]: (node, children) => (
+          <h3 className="heading3">{children}</h3>
+        ),
+        [BLOCKS.HEADING_4]: (node, children) => (
+          <h4 className="heading4">{children}</h4>
+        ),
+        [BLOCKS.EMBEDDED_ASSET]: (node, children) => (
+          <img src={`https:${node.data.target.fields.file['en-US'].url}`} />
+        ),
+        [BLOCKS.PARAGRAPH]: (node, children) => (
+          <p className="copy">{children}</p>
+        ),
+      },
+      renderMark: {},
+    }
 
     return (
       <Layout location={this.props.location}>
@@ -32,11 +62,10 @@ class BlogPostTemplate extends React.Component {
             >
               {post.publishDate}
             </p>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: post.body.childMarkdownRemark.html,
-              }}
-            />
+
+            <div>
+              {documentToReactComponents(post.bodyRichText.json, options)}
+            </div>
           </div>
         </div>
       </Layout>
@@ -61,10 +90,8 @@ export const pageQuery = graphql`
           ...GatsbyContentfulFluid_tracedSVG
         }
       }
-      body {
-        childMarkdownRemark {
-          html
-        }
+      bodyRichText {
+        json
       }
     }
   }
